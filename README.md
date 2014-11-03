@@ -8,9 +8,10 @@ Installation:
 1. Clone repo
 
 `git clone https://github.com/therivenman/vimfiles.git .vim`
+
 `ln -s .vim/vimrc .vimrc`
 
-2. Install [Vundle]
+2. Install Vundle
 
 `git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim`
 
