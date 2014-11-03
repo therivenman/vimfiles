@@ -5,6 +5,15 @@ My VIM configuration files
 
 Installation:
 
-git clone https://github.com/therivenman/vimfiles.git .vim
+1. Clone repo
 
-ln -s .vim/vimrc .vimrc
+`git clone https://github.com/therivenman/vimfiles.git .vim`
+`ln -s .vim/vimrc .vimrc`
+
+2. Install [Vundle]
+
+`git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim`
+
+3. Install plugins
+
+Launch `vim` and run `:PluginInstall`
