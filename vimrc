@@ -258,8 +258,13 @@ let g:better_whitespace_filetypes_blacklist=['gitcommit']
 let NERDTreeHijackNetrw = 1
 let NERDTreeQuitOnOpen = 1
 
-"Ctrl-P
+" Ctrl-P
 let g:ctrlp_root_markers = ['.ycm_extra_conf.py']
+
+" a.vim
+let g:alternateSearchPath = 'sfr:../,sfr:include'
+let g:alternateNoDefaultAlternate = 1
+let g:alternateRelativeFiles = 1
 
 """""""""""""""""""""""""""""""""
 " Custom Functions
