@@ -91,7 +91,9 @@ let g:airline_mode_map = {
   \ }
 let g:airline#extensions#whitespace#checks = [ 'trailing' ]
 let g:airline#extensions#tabline#enabled=1
-let g:airline#extensions#tabline#show_buffers=0
+let g:airline#extensions#tabline#show_buffers=1
+let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline#extensions#tabline#show_close_button=0
 let g:airline_section_x="%{airline#util#wrap(TickNum(),0)}"
 let g:airline_section_y="%{airline#util#wrap(FiletypeFf(),0)}"
 set noshowmode " Hide modeline
@@ -143,11 +145,6 @@ set softtabstop=4 " unify
 set shiftwidth=4 " unify
 set expandtab
 
-
-" set expandtab " real tabs please!
-" set nowrap " do not wrap lines
-" set smarttab " use tabs at the start of a line, spaces elsewhere
-
 function! TickNum()
     if exists("g:pico_ticket")
         return g:pico_ticket
@@ -173,16 +170,21 @@ au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|
 nmap <S-H> gT
 " go to next tab
 nmap <S-L> gt
-
 " new tab
 nmap <leader>t :tabnew<CR>
+
+" move around buffers fast
+" got prev buffer
+nmap <C-H> :bprevious<CR>
+" go to next buffer
+nmap <C-L> :bnext<CR>
+" close current buffer, select previous
+nmap <leader>q :bp <BAR> bd #<CR>
 
 " Bash like keys for the command line
 cnoremap <C-A>      <Home>
 cnoremap <C-E>      <End>
 cnoremap <C-K>      <C-U>
-
-nmap <leader>gt :tab split<CR><C-]>
 
 " toggle paste mode
 nmap <leader>lp :set paste!<BAR>set paste?<CR>
@@ -201,8 +203,8 @@ vnoremap < <gv
 vnoremap > >gv
 
 " pico build
-nmap <leader>bb :wa<CR>:call PicoBuild(1,0)<CR>
-nmap <leader>bh :wa<CR>:call PicoBuild(2,0)<CR>
+nmap <leader>bb :wa<CR>:call PicoBuild(1)<CR>
+nmap <leader>bh :wa<CR>:call PicoBuild(2)<CR>
 nmap <leader>br :wa<CR>:Dispatch sudo ~/work/clifford/blade/fs/buildfs.sh cmakebuild<CR>
 nmap <leader>ba :wa<CR>:Dispatch cd ~/work/clifford/scripts/; ./buildall.sh -kdb<CR>
 nmap <leader>bt :!taggen.sh<CR>:cs reset<CR>
@@ -222,6 +224,9 @@ xmap <leader>hw <Plug>(quickhl-manual-this)
 nmap <leader>hc <Plug>(quickhl-manual-reset)
 xmap <leader>hc <Plug>(quickhl-manual-reset)
 
+" NERD tree
+map <leader>lt :NERDTreeToggle<cr>
+
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
 """""""""""""""""""""""""""""""""
@@ -236,11 +241,9 @@ highlight GitGutterChange ctermfg=yellow guifg=darkyellow
 highlight GitGutterDelete ctermfg=red guifg=darkred
 highlight GitGutterChangeDelete ctermfg=yellow guifg=darkyellow
 
-" NERD tree
-map <leader>lt :NERDTreeToggle<cr>
-
 " YouCompleteMe
-let g:ycm_extra_conf_globlist = ['~/work/clifford/*']
+let g:ycm_complete_in_comments=1
+let g:ycm_extra_conf_globlist = ['~/work/*']
 let g:ycm_filetype_specific_completion_to_disable = {
         \ 'gitcommit': 1
         \}
@@ -251,6 +254,13 @@ set tags=./tags,tags;
 " Better whitespace
 let g:better_whitespace_filetypes_blacklist=['gitcommit']
 
+" NERDTree
+let NERDTreeHijackNetrw = 1
+let NERDTreeQuitOnOpen = 1
+
+"Ctrl-P
+let g:ctrlp_root_markers = ['.ycm_extra_conf.py']
+
 """""""""""""""""""""""""""""""""
 " Custom Functions
 """""""""""""""""""""""""""""""""
@@ -260,11 +270,13 @@ function! PicoProjectName(dir)
 	let basename = directory[-1]
 	if basename == "include"
 		let basename = directory[-2]
+    elseif basename == "UnitTests"
+        let basename = directory[-2]
 	endif
 	return basename
 endfunction
 
-function! PicoBuild(type, clean)
+function! PicoBuild(type)
 	let picoPath = "~/work/clifford/"
 	let bladePath = picoPath."build_blade_debug/"
 	let hostPath = picoPath."build_host_debug/"
@@ -278,12 +290,8 @@ function! PicoBuild(type, clean)
 		echom "Error: Bad build type"
 	endif
 
-	" Now Build/Clean
-	if a:clean == "0"
-		exec "Dispatch make ".PicoProjectName(current_directory)
-	else
-		exec "Dispatch make clean"
-	endif
+	" Now Build
+    exec "Dispatch make ".PicoProjectName(current_directory)
 
 	" Return home
 	exec "cd ".current_directory
@@ -319,9 +327,6 @@ autocmd FileType c,cpp,cc  set cindent comments=sr:/*,mb:*,el:*/,:// cino=>s,e0,
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " VIM Tabs (Windows)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"nmap ,e <Esc>:tabnew<CR>
-"nmap ,t <Esc>:tabn<CR>
-"nmap ,th <Esc>:help tab-page-intro<CR>
 set tabpagemax=15
 
 
@@ -336,17 +341,11 @@ set tabpagemax=15
 setlocal comments=s1:/*,mb:*,ex:*/,f://,fb:#,:%,:XCOMM,n:>,fb:-
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" NERDTree
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let NERDTreeHijackNetrw = 1
-let NERDTreeQuitOnOpen = 1
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Clear Search / Window Management
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Turn off all highlighting
 nnoremap <silent> <C-x> :nohl<CR>
-" Switch between vertical splits with the TAB key
+" Switch between splits with the TAB key
 nnoremap <silent> <Tab> <C-W>w
 " Write to file quickly
 nnoremap <silent> <leader>w :w<CR>
