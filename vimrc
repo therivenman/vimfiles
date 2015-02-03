@@ -66,6 +66,9 @@ if has('gui_running')
 	set t_Co=256          " 256 color mode
 else
 	" terminal mode
+    set encoding=utf-8
+    set term=xterm-256color
+    set termencoding=utf-8
 endif
 
 set cursorline        " highlight current line
