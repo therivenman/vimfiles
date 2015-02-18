@@ -13,7 +13,6 @@ call vundle#begin()
 
 Plugin 'gmarik/Vundle.vim'
 Plugin 'Valloric/YouCompleteMe'
-Plugin 'ntpeters/vim-better-whitespace'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'kien/ctrlp.vim'
 Plugin 'airblade/vim-gitgutter'
@@ -155,8 +154,14 @@ endfunction
 
 "}
 
-"Restore cursor to file position in previous editing session
-set viminfo='10,\"100,:20,%,n~/.viminfo
+set viminfo='10,\"100,:100,%,n~/.viminfo
+"           |   |     |   | +--- viminfo file path
+"           |   |     |   +----- save/restore buffer lists
+"           |   |     +--------- max number command history lines
+"           |   +--------------- max number of lines saved for each register
+"           +------------------- max number of files for which marks are remembered
+
+" Restore cursor to file position in previous editing session
 au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -361,7 +366,7 @@ nnoremap <silent> <leader>s
 	\ :wincmd s <Bar>
 	\ :wincmd w<CR>
 
-"Copy-Paste remapping
+" Copy-Paste remapping
 nnoremap <leader>y "cy
 vnoremap <leader>y "cy
 nnoremap <leader>p "cp
@@ -369,18 +374,21 @@ vnoremap <leader>p "cp
 nnoremap <leader>P "cP
 vnoremap <leader>P "cP
 
-nnoremap <silent> <Leader>ll
-      \ :if exists('w:long_line_match') <Bar>
-      \   silent! call matchdelete(w:long_line_match) <Bar>
-      \   unlet w:long_line_match <Bar>
-      \ else <Bar>
-      \   let w:long_line_match = matchadd('ErrorMsg', '\%>80v.\+', -1) <Bar>
-      \ endif<CR>
+" Show hidden characters
+set listchars=tab:>-,trail:á,eol:$
+nmap <silent> <leader>ls :set nolist!<CR>
 
 """""""""""""""""""""""""
 " Toggle Whitespace
 "
-set listchars=tab:>-,trail:á,eol:$
-nmap <silent> <leader>ls :set nolist!<CR>
-nmap <silent> <leader>lw :ToggleWhitespace<CR>
+highlight ExtraWhitespace ctermbg=darkgreen guibg=darkgreen
+nnoremap <silent> <leader>lw
+    \ :if exists('w:trailing_whitespace_match') <Bar>
+    \   silent! call matchdelete(w:trailing_whitespace_match) <Bar>
+    \   unlet w:trailing_whitespace_match <Bar>
+    \   echo "Whitespace Highlighting: off" <Bar>
+    \ else <Bar>
+    \   let w:trailing_whitespace_match = matchadd('ExtraWhitespace', '\s\+\%#\@<!$', -1) <Bar>
+    \   echo "Whitespace Highlighting: on" <Bar>
+    \ endif<CR>
 
