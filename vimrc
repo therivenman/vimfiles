@@ -293,6 +293,13 @@ function! PicoBuild(type)
 	let picoPath = "~/work/clifford/"
 	let bladePath = picoPath."build_blade_debug/"
 	let hostPath = picoPath."build_host_debug/"
+    let bufferType = &buftype
+    echom bufferType
+
+    " If we are in the quickfix window close it first to prevent a segfault
+    if bufferType == "quickfix"
+        exec "close"
+    endif
 
 	let current_directory = getcwd()
 	if a:type == "1"
