@@ -235,6 +235,10 @@ xmap <leader>hc <Plug>(quickhl-manual-reset)
 " NERD tree
 map <leader>lt :NERDTreeToggle<cr>
 
+" YCM
+nmap <leader>aa :YcmCompleter GoTo<CR>
+nmap <leader>at :YcmCompleter GetType<CR>
+
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
 """""""""""""""""""""""""""""""""
@@ -270,9 +274,13 @@ let NERDTreeQuitOnOpen = 1
 let g:ctrlp_root_markers = ['.ycm_extra_conf.py']
 
 " a.vim
-let g:alternateSearchPath = 'sfr:../,sfr:include'
+let g:alternateSearchPath = 'sfr:..,sfr:../src,sfr:../include/libpddatabase,sfr:include'
 let g:alternateNoDefaultAlternate = 1
 let g:alternateRelativeFiles = 1
+
+" Alternate file with Ctrl-P
+nmap <leader>af :let g:ctrlp_default_input = expand('%:t:r') \|
+    \ call ctrlp#init(0) \| unlet g:ctrlp_default_input<CR>
 
 """""""""""""""""""""""""""""""""
 " Custom Functions
@@ -293,13 +301,9 @@ function! PicoBuild(type)
 	let picoPath = "~/work/clifford/"
 	let bladePath = picoPath."build_blade_debug/"
 	let hostPath = picoPath."build_host_debug/"
-    let bufferType = &buftype
-    echom bufferType
 
-    " If we are in the quickfix window close it first to prevent a segfault
-    if bufferType == "quickfix"
-        exec "close"
-    endif
+    " First close the quickfix window to prevent a segfault
+    exec "cclose"
 
 	let current_directory = getcwd()
 	if a:type == "1"
@@ -336,7 +340,6 @@ au BufNewFile,BufRead *.tpl :set ft=html " all my .tpl files ARE html
 au BufNewFile,BufRead *.hta :set ft=html " all my .tpl files ARE html
 au BufNewFile,BufRead *.tac :set ft=python " all my .tpl files ARE html
 autocmd QuickFixCmdPost [^l]* nested cwindow
-autocmd QuickFixCmdPost    l* nested lwindow
 
 let s:uname = system("echo -n \"$(uname)\"")
 if !v:shell_error && s:uname == "Linux"
@@ -350,7 +353,7 @@ else
     endif
 endif
 " C/C++ specific settings
-autocmd FileType c,cpp,cc  setlocal cindent comments-=:// comments+=f:// cino=>s,e0,n0,f0,{0,}0,^-1s,:0,=s,g0,h1s,p2,t0,+2,(2,)20,*30
+autocmd FileType c,cpp,cc  setlocal cindent comments-=:// comments+=f:// cino=>s,e0,n0,f0,{0,}0,^-1s,:0,=s,h1s,p2,t0,+2,(2,)20,*30
 autocmd FileType gitcommit setlocal comments=
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -367,6 +370,8 @@ nnoremap <silent> <C-x> :nohl<CR>
 nnoremap <silent> <Tab> <C-W>w
 " Write to file quickly
 nnoremap <silent> <leader>w :w<CR>
+" Reopen file quickly
+nnoremap <silent> <leader>e :e<CR>
 " Close window quickly
 nnoremap <silent> <leader>c <C-W>c
 " Open horiztonal split and switch to it
@@ -399,4 +404,7 @@ nnoremap <silent> <leader>lw
     \   let w:trailing_whitespace_match = matchadd('ExtraWhitespace', '\s\+\%#\@<!$', -1) <Bar>
     \   echo "Whitespace Highlighting: on" <Bar>
     \ endif<CR>
+
+" Enable by default
+let w:trailing_whitespace_match = matchadd('ExtraWhitespace', '\s\+\%#\@<!$', -1)
 
