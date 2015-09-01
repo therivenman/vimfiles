@@ -44,7 +44,7 @@ filetype plugin on " detect the type of file
 filetype indent on    " Enable filetype-specific indenting
 set history=1000 " How many lines of history to remember
 set cf " enable error files and error jumping
-set clipboard+=unnamed " turns out I do like is sharing windows clipboard
+set clipboard^=unnamedplus " alias unamed register to the + register
 set ffs=unix,dos,mac " support all three, in this order
 set isk+=_,$,@,%,#,- " none of these should be word dividers, so make them not be
 set autochdir " Automatically change working directory to file that is being edited
@@ -211,12 +211,13 @@ vnoremap < <gv
 vnoremap > >gv
 
 " pico build
-nmap <leader>bb :wa<CR>:call PicoBuild(1)<CR>
-nmap <leader>bh :wa<CR>:call PicoBuild(2)<CR>
+nmap <leader>bb :wa<CR>:call Build(1)<CR>
+nmap <leader>bh :wa<CR>:call Build(2)<CR>
 nmap <leader>br :wa<CR>:Dispatch sudo ~/work/clifford/blade/fs/buildfs.sh cmakebuild<CR>
 nmap <leader>ba :wa<CR>:Dispatch cd ~/work/clifford/scripts/; ./buildall.sh -kdb<CR>
 nmap <leader>bt :!taggen.sh<CR>:cs reset<CR>
 nmap <leader>bc :Dispatch clean-repo.sh<CR>
+nmap <leader>rt :call RunTest()<CR>
 
 " fugitive
 nmap <leader>gs :Gstatus<CR>
@@ -312,6 +313,7 @@ function! PicoBuild(type)
 		exec "cd ".hostPath
 	else
 		echom "Error: Bad build type"
+        return
 	endif
 
 	" Now Build
@@ -321,15 +323,120 @@ function! PicoBuild(type)
 	exec "cd ".current_directory
 endfunction
 
-function! SetTicket(number)
-    if a:number == "0"
-        unlet g:pico_ticket
-    else
-        let g:pico_ticket = a:number
-    endif
+function! SmartboxProjectDir(dir)
+    let directory = split(a:dir, "/")
+
+    let c = 0
+    let dir = directory[c]
+
+    while dir != "smartbox"
+        let c -= 1
+        let dir = directory[c]
+
+        if dir == "home"
+            return "error"
+        endif
+    endwhile
+
+    let finalDir = ""
+
+    while c != -1
+        let c += 1
+
+        if directory[c] == "src"
+            return finalDir
+        elseif directory[c] == "include"
+            return finalDir
+        endif
+
+        let finalDir = finalDir . directory[c] . "/"
+    endwhile
+
+    return finalDir
+
 endfunction
 
-command! -nargs=1 SetTicket call SetTicket(<args>)
+function! SmartboxBuild(type)
+    let picoPath = "~/work/smartbox/"
+    let bladePath = picoPath."build/blade/"
+    let hostPath = picoPath."build/host/"
+
+    let currentDirectory = getcwd()
+
+    " First close the quickfix window to prevent a segfault
+    exec "cclose"
+
+    let buildDir = SmartboxProjectDir(currentDirectory)
+
+    if buildDir == "error"
+        echom "Error getting build dir"
+        return
+    endif
+
+    if a:type == "1"
+        let buildDir = bladePath.buildDir
+    elseif a:type == "2"
+        let buildDir = hostPath.buildDir
+    else
+        echom "Error: Bad build type"
+        return
+    endif
+
+    " Change directory
+    exec "cd ".buildDir
+
+    " Now build
+    exec "Dispatch make -j$(nproc)"
+
+    " Return home
+    exec "cd ".currentDirectory
+
+endfunction
+
+function! FindBuildType()
+    let directory = split(getcwd(), "/")
+
+    let c = -1
+    let dir = directory[c]
+
+    while dir != "home"
+        if dir == "smartbox"
+            return dir
+        endif
+
+        if dir == "clifford"
+            return dir
+        endif
+
+        let c -= 1
+        let dir = directory[c]
+    endwhile
+
+    return "none"
+
+endfunction
+
+function! Build(type)
+
+    let buildProject = FindBuildType()
+
+    if buildProject == "clifford"
+        call PicoBuild(a:type)
+    elseif buildProject == "smartbox"
+        call SmartboxBuild(a:type)
+    else
+        echom "Unknown build project"
+    endif
+
+endfunction
+
+function! RunTest()
+    let testName = expand('%:t:r')
+
+    let testPath = "~/work/smartbox/build/host/".SmartboxProjectDir(getcwd())
+
+    execute "!".testPath.testName
+endfunction
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Autocommands
