@@ -61,12 +61,10 @@ set background=dark
 
 if has('gui_running')
 	set guifont=Anonymous\ Pro\ for\ Powerline\ 12
-	set background=dark
 	set t_Co=256          " 256 color mode
 else
 	" terminal mode
     set encoding=utf-8
-    set term=xterm-256color
     set termencoding=utf-8
 endif
 
@@ -512,6 +510,16 @@ nnoremap <silent> <leader>lw
     \   echo "Whitespace Highlighting: on" <Bar>
     \ endif<CR>
 
-" Enable by default
-let w:trailing_whitespace_match = matchadd('ExtraWhitespace', '\s\+\%#\@<!$', -1)
-
+" Toggle solarized 256 compatibility mode
+nnoremap <silent> <leader>lc
+    \ :set background=dark <Bar>
+    \ if exists('w:colors_flipped') <Bar>
+    \   unlet w:colors_flipped <Bar>
+    \   echo "Original Colors" <Bar>
+    \   let g:solarized_termcolors=16 <Bar>
+    \ else <Bar>
+    \   let w:colors_flipped = 1 <Bar>
+    \   echo "Flipped Colors" <Bar>
+    \   let g:solarized_termcolors=256 <Bar>
+    \ endif <Bar>
+    \ color solarized <CR>
