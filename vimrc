@@ -448,8 +448,11 @@ autocmd QuickFixCmdPost [^l]* nested cwindow
 
 let s:uname = system("echo -n \"$(uname)\"")
 if !v:shell_error && s:uname == "Linux"
-    au InsertEnter * silent execute "!gconftool-2 --type string --set /apps/gnome-terminal/profiles/Default/cursor_shape ibeam"
-    au InsertLeave * silent execute "!gconftool-2 --type string --set /apps/gnome-terminal/profiles/Default/cursor_shape block"
+    let s:display = system("echo -n \"$DISPLAY\"")
+    if !empty(s:display) " Ensure we have a gnome session
+        au InsertEnter * silent execute "!gconftool-2 --type string --set /apps/gnome-terminal/profiles/Default/cursor_shape ibeam"
+        au InsertLeave * silent execute "!gconftool-2 --type string --set /apps/gnome-terminal/profiles/Default/cursor_shape block"
+    endif
 else
     " Change cursor shape between insert and normal mode in iTerm2.app
     if $TERM_PROGRAM =~ "iTerm"
