@@ -62,6 +62,9 @@ set background=dark
 if has('gui_running')
 	set guifont=Anonymous\ Pro\ for\ Powerline\ 12
 	set t_Co=256          " 256 color mode
+elseif $TABLET == '1'
+    " tablet mode
+    let g:solarized_termcolors=256
 else
 	" terminal mode
     set encoding=utf-8
@@ -211,10 +214,9 @@ vnoremap > >gv
 " pico build
 nmap <leader>bb :wa<CR>:call Build(1)<CR>
 nmap <leader>bh :wa<CR>:call Build(2)<CR>
-nmap <leader>br :wa<CR>:Dispatch sudo ~/work/clifford/blade/fs/buildfs.sh cmakebuild<CR>
-nmap <leader>ba :wa<CR>:Dispatch cd ~/work/clifford/scripts/; ./buildall.sh -kdb<CR>
-nmap <leader>bt :!taggen.sh<CR>:cs reset<CR>
-nmap <leader>bc :Dispatch clean-repo.sh<CR>
+nmap <leader>br :wa<CR>:call Build(3)<CR>
+nmap <leader>ba :wa<CR>:call Build(4)<CR>
+nmap <leader>bt :call Build(5)<CR>
 nmap <leader>rt :call RunTest()<CR>
 
 " fugitive
@@ -237,6 +239,10 @@ map <leader>lt :NERDTreeToggle<cr>
 " YCM
 nmap <leader>aa :YcmCompleter GoTo<CR>
 nmap <leader>at :YcmCompleter GetType<CR>
+
+" exit insert mode
+imap ` <Esc>
+imap jk <Esc>
 
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
@@ -296,19 +302,38 @@ function! PicoProjectName(dir)
 	return basename
 endfunction
 
-function! PicoBuild(type)
-	let picoPath = "~/work/clifford/"
-	let bladePath = picoPath."build_blade_debug/"
-	let hostPath = picoPath."build_host_debug/"
+function! PicoBuild(type, path, blade, host)
+	let picoPath = a:path
+	let bladePath = picoPath."/".a:blade
+	let hostPath = picoPath."/".a:host
 
     " First close the quickfix window to prevent a segfault
     exec "cclose"
 
 	let current_directory = getcwd()
 	if a:type == "1"
+        " build blade
 		exec "cd ".bladePath
 	elseif a:type == "2"
+        " build host
 		exec "cd ".hostPath
+    elseif a:type == "3"
+        " rootfs
+        exec "Dispatch sudo ".picoPath."/blade/fs/buildfs.sh cmakebuild"
+        return
+    elseif a:type == "4"
+        " buildall
+        exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdb"
+        return
+    elseif a:type == "5"
+        " taggen
+        let tagScript = picoPath."/scripts/taggen.sh"
+        if !filereadable(tagScript)
+            return
+        endif
+        exec "silent !".tagScript
+        exec "silent cs reset"
+        return
 	else
 		echom "Error: Bad build type"
         return
@@ -398,13 +423,7 @@ function! FindBuildType()
     let dir = directory[c]
 
     while dir != "home"
-        if dir == "smartbox"
-            return dir
-        endif
-
-        if dir == "clifford"
-            return dir
-        endif
+        if file
 
         let c -= 1
         let dir = directory[c]
@@ -416,10 +435,52 @@ endfunction
 
 function! Build(type)
 
-    let buildProject = FindBuildType()
+    " read project config
+    let config = findfile(".pico_project", ".;")
+
+    if empty(config)
+        echo "No .pico_project file found in path"
+        return
+    endif
+
+    let configStrings = readfile(config)
+    let projectRoot = ""
+    let bladeDir = ""
+    let hostDir = ""
+    let buildFs = ""
+    let tagGen = ""
+
+    for i in range(0, len(configStrings) - 1)
+        let string = split(configStrings[i], "=")
+        let key = string[0]
+        let value = string[1]
+
+        if key == "ROOT"
+            let projectRoot = value
+        elseif key == "BLADE"
+            let bladeDir = value
+        elseif key == "HOST"
+            let hostDir = value
+        elseif key == "BUILDFS"
+            let buildFs = value
+        elseif key == "TAGGEN"
+            let tagGen = value
+        endif
+    endfor
+
+    let folderName = split(projectRoot, "/")[-1]
+    let buildProject = ""
+
+    if folderName == "clifford"
+        let buildProject = "clifford"
+    elseif folderName == "bell-canada"
+        let buildProject = "clifford"
+    elseif folderName == "smartbox"
+        let buildProject = "smartbox"
+    endif
 
     if buildProject == "clifford"
-        call PicoBuild(a:type)
+        call PicoBuild(a:type, projectRoot, bladeDir, hostDir)
     elseif buildProject == "smartbox"
         call SmartboxBuild(a:type)
     else
@@ -445,6 +506,7 @@ au BufNewFile,BufRead *.tpl :set ft=html " all my .tpl files ARE html
 au BufNewFile,BufRead *.hta :set ft=html " all my .tpl files ARE html
 au BufNewFile,BufRead *.tac :set ft=python " all my .tpl files ARE html
 autocmd QuickFixCmdPost [^l]* nested cwindow
+autocmd BufWritePost *.cpp,*.h,*.c,*.hpp :call Build(5)
 
 let s:uname = system("echo -n \"$(uname)\"")
 if !v:shell_error && s:uname == "Linux"
@@ -513,16 +575,3 @@ nnoremap <silent> <leader>lw
     \   echo "Whitespace Highlighting: on" <Bar>
     \ endif<CR>
 
-" Toggle solarized 256 compatibility mode
-nnoremap <silent> <leader>lc
-    \ :set background=dark <Bar>
-    \ if exists('w:colors_flipped') <Bar>
-    \   unlet w:colors_flipped <Bar>
-    \   echo "Original Colors" <Bar>
-    \   let g:solarized_termcolors=16 <Bar>
-    \ else <Bar>
-    \   let w:colors_flipped = 1 <Bar>
-    \   echo "Flipped Colors" <Bar>
-    \   let g:solarized_termcolors=256 <Bar>
-    \ endif <Bar>
-    \ color solarized <CR>
