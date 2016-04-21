@@ -242,7 +242,9 @@ nmap <leader>at :YcmCompleter GetType<CR>
 
 " exit insert mode
 imap ` <Esc>
+imap jj <Esc>
 imap jk <Esc>
+imap <C-j> <Esc>
 
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
