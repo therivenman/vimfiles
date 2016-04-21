@@ -217,6 +217,7 @@ nmap <leader>bh :wa<CR>:call Build(2)<CR>
 nmap <leader>br :wa<CR>:call Build(3)<CR>
 nmap <leader>ba :wa<CR>:call Build(4)<CR>
 nmap <leader>bt :call Build(5)<CR>
+nmap <leader>bc :wa<CR>:call Build(6)<CR>
 nmap <leader>rt :call RunTest()<CR>
 
 " fugitive
@@ -241,7 +242,6 @@ nmap <leader>aa :YcmCompleter GoTo<CR>
 nmap <leader>at :YcmCompleter GetType<CR>
 
 " exit insert mode
-imap ` <Esc>
 imap jj <Esc>
 imap jk <Esc>
 imap <C-j> <Esc>
@@ -253,6 +253,7 @@ imap <C-j> <Esc>
 " git gutter
 let g:gitgutter_realtime=0
 let g:gitgutter_sign_column_always=1
+let g:gitgutter_max_signs = 1000
 highlight clear SignColumn
 highlight SignColumn ctermbg=8
 highlight GitGutterAdd ctermfg=green guifg=darkgreen
@@ -270,15 +271,12 @@ let g:ycm_filetype_specific_completion_to_disable = {
 " Ctags
 set tags=./tags,tags;
 
-" Better whitespace
-let g:better_whitespace_filetypes_blacklist=['gitcommit']
-
 " NERDTree
 let NERDTreeHijackNetrw = 1
 let NERDTreeQuitOnOpen = 1
 
 " Ctrl-P
-let g:ctrlp_root_markers = ['.ycm_extra_conf.py']
+let g:ctrlp_root_markers = ['.pico_project']
 
 " a.vim
 let g:alternateSearchPath = 'sfr:..,sfr:../src,sfr:../include/libpddatabase,sfr:include'
@@ -325,7 +323,7 @@ function! PicoBuild(type, path, blade, host)
         return
     elseif a:type == "4"
         " buildall
-        exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdb"
+        exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdbip"
         return
     elseif a:type == "5"
         " taggen
@@ -335,6 +333,10 @@ function! PicoBuild(type, path, blade, host)
         endif
         exec "silent !".tagScript
         exec "silent cs reset"
+        return
+    elseif a:type == "6"
+        " "clean" build
+        exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdb"
         return
 	else
 		echom "Error: Bad build type"
@@ -474,6 +476,8 @@ function! Build(type)
     let buildProject = ""
 
     if folderName == "clifford"
+        let buildProject = "clifford"
+    elseif folderName == "clifford-codereview"
         let buildProject = "clifford"
     elseif folderName == "bell-canada"
         let buildProject = "clifford"
