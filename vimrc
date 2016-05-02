@@ -244,7 +244,7 @@ nmap <leader>at :YcmCompleter GetType<CR>
 " exit insert mode
 imap jj <Esc>
 imap jk <Esc>
-imap <C-j> <Esc>
+map <C-j> <Esc>
 
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
@@ -511,6 +511,7 @@ au BufNewFile,BufRead *.asp :set ft=aspjscript " all my .asp files ARE jscript
 au BufNewFile,BufRead *.tpl :set ft=html " all my .tpl files ARE html
 au BufNewFile,BufRead *.hta :set ft=html " all my .tpl files ARE html
 au BufNewFile,BufRead *.tac :set ft=python " all my .tpl files ARE html
+au BufNewFile,BufFilePre,BufRead *.md :set filetype=markdown
 autocmd QuickFixCmdPost [^l]* nested cwindow
 autocmd BufWritePost *.cpp,*.h,*.c,*.hpp :call Build(5)
 
