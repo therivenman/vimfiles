@@ -21,6 +21,7 @@ Plugin 'octol/vim-cpp-enhanced-highlight'
 Plugin 'justinmk/vim-syntax-extra'
 Plugin 'steffanc/cscopemaps.vim'
 Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
 Plugin 'tpope/vim-fugitive'
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'scrooloose/nerdtree'
@@ -114,6 +115,7 @@ set wildmode=list:longest,full
 set ruler " Always show current positions along the bottom
 set cmdheight=2 " the command bar is 2 high
 set number " turn on line numbers
+set relativenumber " turn of relative line numbers
 set lz " do not redraw while running macros (much faster) (LazyRedraw)
 set hid " you can change buffer without saving
 set backspace=2 " make backspace work normal
@@ -189,6 +191,8 @@ nmap <C-H> :bprevious<CR>
 nmap <C-L> :bnext<CR>
 " close current buffer, select previous
 nmap <leader>q :bp <BAR> bd #<CR>
+" close all buffers quickly
+nmap <leader>db :1,100bd<CR>
 
 " Bash like keys for the command line
 cnoremap <C-A>      <Home>
@@ -200,6 +204,9 @@ nmap <leader>lp :set paste!<BAR>set paste?<CR>
 
 " toggle line numbers
 nmap <leader>ln :set invnumber<CR>
+
+" toggle relative line numbers
+nmap <leader>ll :set invrelativenumber<CR>
 
 " remap * to stay put
 nnoremap * *N
@@ -244,7 +251,8 @@ nmap <leader>at :YcmCompleter GetType<CR>
 " exit insert mode
 imap jj <Esc>
 imap jk <Esc>
-map <C-j> <Esc>
+imap <C-j> <Esc>
+vmap <C-j> <Esc>
 
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
