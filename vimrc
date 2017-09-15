@@ -1,5 +1,5 @@
-set path=~/work/clifford/blade/**,~/work/clifford/common/**
-set path+=/opt/poky/current/sysroots/armv7a-vfp-neon-poky-linux-gnueabi/usr/include/**
+" set path=~/work/clifford/blade/**,~/work/clifford/common/**
+" set path+=/opt/poky/current/sysroots/armv7a-vfp-neon-poky-linux-gnueabi/usr/include/**
 
 set nobackup
 set noswapfile
@@ -28,6 +28,10 @@ Plugin 'scrooloose/nerdtree'
 Plugin 'tpope/vim-commentary'
 Plugin 't9md/vim-quickhl'
 Plugin 'vim-scripts/a.vim'
+Plugin 'therivenman/vim-rtags'
+Plugin 'dbakker/vim-projectroot'
+Plugin 'EinfachToll/DidYouMean'
+Plugin 'tpope/vim-unimpaired'
 
 call vundle#end()
 
@@ -192,7 +196,7 @@ nmap <C-L> :bnext<CR>
 " close current buffer, select previous
 nmap <leader>q :bp <BAR> bd #<CR>
 " close all buffers quickly
-nmap <leader>db :1,100bd<CR>
+nmap <leader>db :bufdo bd<CR>
 
 " Bash like keys for the command line
 cnoremap <C-A>      <Home>
@@ -214,6 +218,9 @@ nnoremap * *N
 " fast substitue
 nmap <leader>lr :%s//<C-r><C-w>/gc
 
+" grep from root
+nnoremap <leader>g :ProjectRootExe grep<space>
+
 " allow multiple indentation/deindentation in visual mode
 vnoremap < <gv
 vnoremap > >gv
@@ -234,6 +241,7 @@ nmap <leader>gc :Gcommit -v<CR>
 nmap <leader>ga :Gcommit -v --amend<CR>
 nmap <leader>gb :Gblame<CR>
 nmap <leader>gw :Gwrite<CR>
+nmap <leader>gl :Glog -- %<CR>
 
 " quickhl
 nmap <leader>hw <Plug>(quickhl-manual-this)
@@ -242,7 +250,7 @@ nmap <leader>hc <Plug>(quickhl-manual-reset)
 xmap <leader>hc <Plug>(quickhl-manual-reset)
 
 " NERD tree
-map <leader>lt :NERDTreeToggle<cr>
+map <leader>lt :ProjectRootExe NERDTreeToggle<cr>
 
 " YCM
 nmap <leader>aa :YcmCompleter GoTo<CR>
@@ -253,6 +261,11 @@ imap jj <Esc>
 imap jk <Esc>
 imap <C-j> <Esc>
 vmap <C-j> <Esc>
+
+"""""""""""""""""""""""""""""""""
+" Custom Commands
+"""""""""""""""""""""""""""""""""
+command! -bang -nargs=* -complete=file -bar Grep ProjectRootExe grep! <args>
 
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
@@ -275,6 +288,7 @@ let g:ycm_extra_conf_globlist = ['~/work/*']
 let g:ycm_filetype_specific_completion_to_disable = {
         \ 'gitcommit': 1
         \}
+let g:ycm_always_populate_location_list=1
 
 " Ctags
 set tags=./tags,tags;
@@ -286,10 +300,22 @@ let NERDTreeQuitOnOpen = 1
 " Ctrl-P
 let g:ctrlp_root_markers = ['.pico_project']
 
+" The Silver Searcher
+if executable('ag')
+  " Use ag over grep
+  set grepprg=ag\ --nogroup\ --nocolor
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+endif
+
 " a.vim
-let g:alternateSearchPath = 'sfr:..,sfr:../src,sfr:../include/libpddatabase,sfr:include'
+let g:alternateSearchPath = 'sfr:..,sfr:../src,sfr:include'
 let g:alternateNoDefaultAlternate = 1
 let g:alternateRelativeFiles = 1
+
+" ack
+if executable('ag')
+  let g:ackprg = 'ag'
+endif
 
 " Alternate file with Ctrl-P
 nmap <leader>af :let g:ctrlp_default_input = expand('%:t:r') \|
@@ -315,7 +341,7 @@ function! PicoBuild(type, path, blade, host)
 	let bladePath = picoPath."/".a:blade
 	let hostPath = picoPath."/".a:host
 
-    " First close the quickfix window to prevent a segfault
+    " First close the quickfix window to prevent a segfault?
     exec "cclose"
 
 	let current_directory = getcwd()
@@ -327,7 +353,7 @@ function! PicoBuild(type, path, blade, host)
 		exec "cd ".hostPath
     elseif a:type == "3"
         " rootfs
-        exec "Dispatch sudo ".picoPath."/blade/fs/buildfs.sh cmakebuild"
+        exec "Dispatch sudo ".picoPath."/blade/fs/buildfs.sh"
         return
     elseif a:type == "4"
         " buildall
@@ -461,6 +487,7 @@ function! Build(type)
     let hostDir = ""
     let buildFs = ""
     let tagGen = ""
+    let buildProject = ""
 
     for i in range(0, len(configStrings) - 1)
         let string = split(configStrings[i], "=")
@@ -477,21 +504,10 @@ function! Build(type)
             let buildFs = value
         elseif key == "TAGGEN"
             let tagGen = value
+        elseif key == "BUILD"
+            let buildProject = value
         endif
     endfor
-
-    let folderName = split(projectRoot, "/")[-1]
-    let buildProject = ""
-
-    if folderName == "clifford"
-        let buildProject = "clifford"
-    elseif folderName == "clifford-codereview"
-        let buildProject = "clifford"
-    elseif folderName == "bell-canada"
-        let buildProject = "clifford"
-    elseif folderName == "smartbox"
-        let buildProject = "smartbox"
-    endif
 
     if buildProject == "clifford"
         call PicoBuild(a:type, projectRoot, bladeDir, hostDir)
@@ -515,11 +531,8 @@ endfunction
 " Autocommands
 " """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 autocmd BufEnter * :syntax sync fromstart " ensure every file does syntax highlighting (full)
-au BufNewFile,BufRead *.asp :set ft=aspjscript " all my .asp files ARE jscript
-au BufNewFile,BufRead *.tpl :set ft=html " all my .tpl files ARE html
-au BufNewFile,BufRead *.hta :set ft=html " all my .tpl files ARE html
-au BufNewFile,BufRead *.tac :set ft=python " all my .tpl files ARE html
-au BufNewFile,BufFilePre,BufRead *.md :set filetype=markdown
+au BufNewFile,BufRead *.tpp :set ft=cpp " damn tpps
+au BufNewFile,BufFilePre,BufRead *.md :set ft=markdown
 autocmd QuickFixCmdPost [^l]* nested cwindow
 autocmd BufWritePost *.cpp,*.h,*.c,*.hpp :call Build(5)
 
@@ -527,8 +540,14 @@ let s:uname = system("echo -n \"$(uname)\"")
 if !v:shell_error && s:uname == "Linux"
     let s:display = system("echo -n \"$DISPLAY\"")
     if !empty(s:display) " Ensure we have a gnome session
-        au InsertEnter * silent execute "!gconftool-2 --type string --set /apps/gnome-terminal/profiles/Default/cursor_shape ibeam"
-        au InsertLeave * silent execute "!gconftool-2 --type string --set /apps/gnome-terminal/profiles/Default/cursor_shape block"
+		au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
+		  au InsertEnter,InsertChange *
+			\ if v:insertmode == 'i' |
+			\   silent execute '!echo -ne "\e[5 q"' | redraw! |
+			\ elseif v:insertmode == 'r' |
+			\   silent execute '!echo -ne "\e[3 q"' | redraw! |
+			\ endif
+		  au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
     endif
 else
     " Change cursor shape between insert and normal mode in iTerm2.app
