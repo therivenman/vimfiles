@@ -13,7 +13,7 @@ call vundle#begin()
 
 Plugin 'gmarik/Vundle.vim'
 Plugin 'Valloric/YouCompleteMe'
-Plugin 'altercation/vim-colors-solarized'
+Plugin 'ericbn/vim-solarized'
 Plugin 'kien/ctrlp.vim'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'tpope/vim-dispatch'
@@ -57,29 +57,33 @@ set autoread
 set showcmd
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Theme/Colors
-" """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 syntax enable
-set background=dark
 
-if has('gui_running')
-	set guifont=Anonymous\ Pro\ for\ Powerline\ 12
-	set t_Co=256          " 256 color mode
-elseif $TABLET == '1'
-    " tablet mode
-    let g:solarized_termcolors=256
-else
-	" terminal mode
-    set encoding=utf-8
-    set termencoding=utf-8
+if has("termguicolors")     " set true colors
+    set t_8f=[38;2;%lu;%lu;%lum
+    set t_8b=[48;2;%lu;%lu;%lum
+    set termguicolors
 endif
 
-set cursorline        " highlight current line
-highlight CursorLine          guibg=#003853 ctermbg=24  gui=none cterm=none
+set encoding=utf-8
+set termencoding=utf-8
 
-color solarized             " Load a colorscheme
+" git gutter
+let g:gitgutter_realtime=0
+set signcolumn=yes
+let g:gitgutter_max_signs = 1000
+highlight clear SignColumn
+highlight SignColumn ctermbg=8
+highlight GitGutterAdd ctermfg=green guifg=darkgreen
+highlight GitGutterChange ctermfg=yellow guifg=darkyellow
+highlight GitGutterDelete ctermfg=red guifg=darkred
+highlight GitGutterChangeDelete ctermfg=yellow guifg=darkyellow
+
+set cursorline " highlight current line
+highlight CursorLine guibg=#003853 ctermbg=24  gui=none cterm=none
 
 " Airline
 set laststatus=2
@@ -269,19 +273,7 @@ command! -bang -nargs=* -complete=file -bar Grep ProjectRootExe grep! <args>
 
 """""""""""""""""""""""""""""""""
 " Plugin Configurations
-"""""""""""""""""""""""""""""""""
-
-" git gutter
-let g:gitgutter_realtime=0
-let g:gitgutter_sign_column_always=1
-let g:gitgutter_max_signs = 1000
-highlight clear SignColumn
-highlight SignColumn ctermbg=8
-highlight GitGutterAdd ctermfg=green guifg=darkgreen
-highlight GitGutterChange ctermfg=yellow guifg=darkyellow
-highlight GitGutterDelete ctermfg=red guifg=darkred
-highlight GitGutterChangeDelete ctermfg=yellow guifg=darkyellow
-
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " YouCompleteMe
 let g:ycm_complete_in_comments=1
 let g:ycm_extra_conf_globlist = ['~/work/*']
