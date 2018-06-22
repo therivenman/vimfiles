@@ -25,7 +25,7 @@ Plugin 'scrooloose/nerdtree'
 Plugin 'tpope/vim-commentary'
 Plugin 't9md/vim-quickhl'
 Plugin 'vim-scripts/a.vim'
-Plugin 'therivenman/vim-rtags'
+Plugin 'lyuts/vim-rtags'
 Plugin 'dbakker/vim-projectroot'
 Plugin 'EinfachToll/DidYouMean'
 Plugin 'tpope/vim-unimpaired'
@@ -103,6 +103,7 @@ let g:airline#extensions#tabline#enabled=1
 let g:airline#extensions#tabline#show_buffers=1
 let g:airline#extensions#tabline#fnamemod = ':t'
 let g:airline#extensions#tabline#show_close_button=0
+let g:airline_detect_spell=0
 set noshowmode " Hide modeline
 
 set background=dark
@@ -215,7 +216,7 @@ nnoremap * *N
 nmap <leader>lr :%s//<C-r><C-w>/gc
 
 " grep from root
-nnoremap <leader>g :ProjectRootExe grep<space>
+nnoremap <leader>g :ProjectRootExe grep<space><C-r><C-w>
 
 " allow multiple indentation/deindentation in visual mode
 vnoremap < <gv
@@ -597,3 +598,13 @@ nnoremap <silent> <leader>lw
     \   echo "Whitespace Highlighting: on" <Bar>
     \ endif<CR>
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Spellcheck
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+set spell spelllang=en_us
+highlight SpellBad None
+highlight SpellCap None
+highlight SpellLocal None
+highlight SpellRare None
+highlight SpellBad cterm=underline
+highlight SpellCap cterm=underline

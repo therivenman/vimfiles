@@ -1,2 +1,3 @@
 # ignore bundle folder; it's being managed by Vundle
 bundle
+spell
