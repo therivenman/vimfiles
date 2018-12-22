@@ -11,7 +11,6 @@ call vundle#begin()
 Plugin 'gmarik/Vundle.vim'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'ericbn/vim-solarized'
-Plugin 'kien/ctrlp.vim'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'tpope/vim-dispatch'
 Plugin 'octol/vim-cpp-enhanced-highlight'
@@ -29,6 +28,8 @@ Plugin 'lyuts/vim-rtags'
 Plugin 'dbakker/vim-projectroot'
 Plugin 'EinfachToll/DidYouMean'
 Plugin 'tpope/vim-unimpaired'
+Plugin 'junegunn/fzf'
+Plugin 'junegunn/fzf.vim'
 
 call vundle#end()
 
@@ -216,7 +217,7 @@ nnoremap * *N
 nmap <leader>lr :%s//<C-r><C-w>/gc
 
 " grep from root
-nnoremap <leader>g :ProjectRootExe grep<space><C-r><C-w>
+nnoremap <leader>g :ProjectRootExe Ag!<space><C-r><C-w>
 
 " allow multiple indentation/deindentation in visual mode
 vnoremap < <gv
@@ -259,10 +260,17 @@ imap jk <Esc>
 imap <C-j> <Esc>
 vmap <C-j> <Esc>
 
+" fzf
+nmap <C-p> :ProjectRootExe Files<CR>
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Custom Commands
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-command! -bang -nargs=* -complete=file -bar Grep ProjectRootExe grep! <args>
+command! -bang -nargs=* Ag
+  \ call fzf#vim#ag(<q-args>,
+  \                 <bang>0 ? fzf#vim#with_preview('up:60%:hidden', '?')
+  \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \                 <bang>0)
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Plugin Configurations
@@ -282,29 +290,18 @@ set tags=./tags,tags;
 let NERDTreeHijackNetrw = 1
 let NERDTreeQuitOnOpen = 1
 
-" Ctrl-P
-let g:ctrlp_root_markers = ['.pico_project']
-
-" The Silver Searcher
-if executable('ag')
-  " Use ag over grep
-  set grepprg=ag\ --nogroup\ --nocolor
-  set grepformat=%f:%l:%c:%m,%f:%l:%m
-endif
-
 " a.vim
 let g:alternateSearchPath = 'sfr:..,sfr:../src,sfr:include'
 let g:alternateNoDefaultAlternate = 1
 let g:alternateRelativeFiles = 1
 
+" ProjectRoo
+let g:rootmarkers = ['.pico_project','.projectroot','.git','.hg','.svn','.bzr','_darcs','build.xml']
+
 " ack
 if executable('ag')
   let g:ackprg = 'ag'
 endif
-
-" Alternate file with Ctrl-P
-nmap <leader>af :let g:ctrlp_default_input = expand('%:t:r') \|
-    \ call ctrlp#init(0) \| unlet g:ctrlp_default_input<CR>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Custom Functions
