@@ -47,7 +47,7 @@ filetype plugin on " detect the type of file
 filetype indent on    " Enable filetype-specific indenting
 set history=1000 " How many lines of history to remember
 set cf " enable error files and error jumping
-set clipboard^=unnamedplus " alias unamed register to the + register
+set clipboard^=unnamed,unnamedplus " alias unamed register to the + register
 set ffs=unix,dos,mac " support all three, in this order
 set isk+=_,$,@,%,#,- " none of these should be word dividers, so make them not be
 set autochdir " Automatically change working directory to file that is being edited
@@ -307,31 +307,31 @@ endif
 " Custom Functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! PicoProjectName(dir)
-	let directory = split(a:dir, "/")
-	let basename = directory[-1]
-	if basename == "include"
-		let basename = directory[-2]
+    let directory = split(a:dir, "/")
+    let basename = directory[-1]
+    if basename == "include"
+        let basename = directory[-2]
     elseif basename == "UnitTests"
         let basename = directory[-2]
-	endif
-	return basename
+    endif
+    return basename
 endfunction
 
 function! PicoBuild(type, path, blade, host)
-	let picoPath = a:path
-	let bladePath = picoPath."/".a:blade
-	let hostPath = picoPath."/".a:host
+    let picoPath = a:path
+    let bladePath = picoPath."/".a:blade
+    let hostPath = picoPath."/".a:host
 
     " First close the quickfix window to prevent a segfault?
     exec "cclose"
 
-	let current_directory = getcwd()
-	if a:type == "1"
+    let current_directory = getcwd()
+    if a:type == "1"
         " build blade
-		exec "cd ".bladePath
-	elseif a:type == "2"
+        exec "cd ".bladePath
+    elseif a:type == "2"
         " build host
-		exec "cd ".hostPath
+        exec "cd ".hostPath
     elseif a:type == "3"
         " rootfs
         exec "Dispatch sudo ".picoPath."/blade/fs/buildfs.sh"
@@ -353,16 +353,16 @@ function! PicoBuild(type, path, blade, host)
         " "clean" build
         exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdb"
         return
-	else
-		echom "Error: Bad build type"
+    else
+        echom "Error: Bad build type"
         return
-	endif
+    endif
 
-	" Now Build
+    " Now Build
     exec "Dispatch make ".PicoProjectName(current_directory)
 
-	" Return home
-	exec "cd ".current_directory
+    " Return home
+    exec "cd ".current_directory
 endfunction
 
 function! SmartboxProjectDir(dir)
@@ -521,24 +521,24 @@ let s:uname = system("echo -n \"$(uname)\"")
 if !v:shell_error && s:uname == "Linux"
     let s:display = system("echo -n \"$DISPLAY\"")
     if !empty(s:display) " Ensure we have a gnome session
-		au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
-		  au InsertEnter,InsertChange *
-			\ if v:insertmode == 'i' |
-			\   silent execute '!echo -ne "\e[5 q"' | redraw! |
-			\ elseif v:insertmode == 'r' |
-			\   silent execute '!echo -ne "\e[3 q"' | redraw! |
-			\ endif
-		  au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
+        au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
+          au InsertEnter,InsertChange *
+            \ if v:insertmode == 'i' |
+            \   silent execute '!echo -ne "\e[5 q"' | redraw! |
+            \ elseif v:insertmode == 'r' |
+            \   silent execute '!echo -ne "\e[3 q"' | redraw! |
+            \ endif
+          au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
     endif
 else
     " Change cursor shape between insert and normal mode in iTerm2.app
     if $TERM_PROGRAM =~ "iTerm"
-		if exists('$TMUX')
-			let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
-			let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
-		else
-			let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Vertical bar in insert mode
-			let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
+        if exists('$TMUX')
+            let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+            let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+        else
+            let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Vertical bar in insert mode
+            let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
         endif
     endif
 endif
@@ -566,8 +566,8 @@ nnoremap <silent> <leader>e :e<CR>
 nnoremap <silent> <leader>c <C-W>c
 " Open horiztonal split and switch to it
 nnoremap <silent> <leader>s
-	\ :wincmd s <Bar>
-	\ :wincmd w<CR>
+    \ :wincmd s <Bar>
+    \ :wincmd w<CR>
 
 " Copy-Paste remapping
 nnoremap <leader>y "cy
