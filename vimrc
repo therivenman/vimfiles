@@ -5,33 +5,33 @@ set ignorecase
 set nocompatible " get out of horrible vi-compatible mode
 filetype off
 
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
+call plug#begin('~/.vim/plugged')
 
-Plugin 'gmarik/Vundle.vim'
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'ericbn/vim-solarized'
-Plugin 'airblade/vim-gitgutter'
-Plugin 'tpope/vim-dispatch'
-Plugin 'octol/vim-cpp-enhanced-highlight'
-Plugin 'justinmk/vim-syntax-extra'
-Plugin 'steffanc/cscopemaps.vim'
-Plugin 'bling/vim-airline'
-Plugin 'vim-airline/vim-airline-themes'
-Plugin 'tpope/vim-fugitive'
-Plugin 'Lokaltog/vim-easymotion'
-Plugin 'scrooloose/nerdtree'
-Plugin 'tpope/vim-commentary'
-Plugin 't9md/vim-quickhl'
-Plugin 'vim-scripts/a.vim'
-Plugin 'lyuts/vim-rtags'
-Plugin 'dbakker/vim-projectroot'
-Plugin 'EinfachToll/DidYouMean'
-Plugin 'tpope/vim-unimpaired'
-Plugin 'junegunn/fzf'
-Plugin 'junegunn/fzf.vim'
+Plug 'Valloric/YouCompleteMe'
+Plug 'ericbn/vim-solarized'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-dispatch'
+Plug 'octol/vim-cpp-enhanced-highlight'
+Plug 'justinmk/vim-syntax-extra'
+Plug 'steffanc/cscopemaps.vim'
+Plug 'bling/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'tpope/vim-fugitive'
+Plug 'Lokaltog/vim-easymotion'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-commentary'
+Plug 't9md/vim-quickhl'
+Plug 'vim-scripts/a.vim'
+Plug 'lyuts/vim-rtags'
+Plug 'dbakker/vim-projectroot'
+Plug 'EinfachToll/DidYouMean'
+Plug 'tpope/vim-unimpaired'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+Plug 'mhinz/vim-grepper'
+Plug 'mphe/grayout.vim'
 
-call vundle#end()
+call plug#end()
 
 set guioptions-=m "remove menu bar
 set guioptions-=T "remove toolbar
@@ -49,11 +49,9 @@ set history=1000 " How many lines of history to remember
 set cf " enable error files and error jumping
 set clipboard^=unnamed,unnamedplus " alias unamed register to the + register
 set ffs=unix,dos,mac " support all three, in this order
-set isk+=_,$,@,%,#,- " none of these should be word dividers, so make them not be
-set autochdir " Automatically change working directory to file that is being edited
+set isk=@,48-57,_,192-255 " none of these should be word dividers, so make them not be
 set autoread
 set showcmd
-
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Theme/Colors
@@ -82,6 +80,9 @@ highlight GitGutterChangeDelete ctermfg=yellow guifg=darkyellow
 
 set cursorline " highlight current line
 highlight CursorLine guibg=#003853 ctermbg=24  gui=none cterm=none
+
+" highlight 80 characters column
+let &colorcolumn="80,".join(range(800,999),",")
 
 " Airline
 set laststatus=2
@@ -130,7 +131,7 @@ set fillchars=vert:\ ,stl:\ ,stlnc:\  " make the splitters between windows be bl
 set completeopt-=preview
 set gcr=a:blinkon0
 set winwidth=85
-set textwidth=1000 " allow long lines
+set textwidth=80 " limit lines to 80 chars
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Visual Cues
@@ -148,21 +149,10 @@ set noerrorbells " no noises
 set fo=tcrqn " See Help (complex)
 set ai " autoindent
 set si " smartindent
-set cindent " do c-style indenting
 set tabstop=4 " tab spacing (settings below are just to unify it)
 set softtabstop=4 " unify
 set shiftwidth=4 " unify
 set expandtab
-
-function! TickNum()
-    if exists("g:pico_ticket")
-        return g:pico_ticket
-    else
-        return ''
-    endif
-endfunction
-
-"}
 
 set viminfo='10,\"100,:100,%,n~/.viminfo
 "           |   |     |   | +--- viminfo file path
@@ -217,20 +207,18 @@ nnoremap * *N
 nmap <leader>lr :%s//<C-r><C-w>/gc
 
 " grep from root
-nnoremap <leader>g :ProjectRootExe Ag!<space><C-r><C-w>
+nnoremap <leader>g :call Search("<C-r><C-w>")<cr>
+nnoremap <leader>gg :call Search("<C-r>"")<cr>
 
 " allow multiple indentation/deindentation in visual mode
 vnoremap < <gv
 vnoremap > >gv
 
 " pico build
-nmap <leader>bb :wa<CR>:call Build(1)<CR>
-nmap <leader>bh :wa<CR>:call Build(2)<CR>
-nmap <leader>br :wa<CR>:call Build(3)<CR>
-nmap <leader>ba :wa<CR>:call Build(4)<CR>
-nmap <leader>bt :call Build(5)<CR>
-nmap <leader>bc :wa<CR>:call Build(6)<CR>
-nmap <leader>rt :call RunTest()<CR>
+nmap <leader>ba :wa<CR>:call Build("buildall")<CR>
+nmap <leader>bb :wa<CR>:call Build("make")<CR>
+nmap <leader>bf :wa<CR>:call Build("flash")<CR>
+nmap <leader>bq :wa<CR>:call Build("quick")<CR>
 
 " fugitive
 nmap <leader>gs :Gstatus<CR>
@@ -266,11 +254,6 @@ nmap <C-p> :ProjectRootExe Files<CR>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Custom Commands
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-command! -bang -nargs=* Ag
-  \ call fzf#vim#ag(<q-args>,
-  \                 <bang>0 ? fzf#vim#with_preview('up:60%:hidden', '?')
-  \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
-  \                 <bang>0)
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Plugin Configurations
@@ -295,256 +278,83 @@ let g:alternateSearchPath = 'sfr:..,sfr:../src,sfr:include'
 let g:alternateNoDefaultAlternate = 1
 let g:alternateRelativeFiles = 1
 
-" ProjectRoo
-let g:rootmarkers = ['.pico_project','.projectroot','.git','.hg','.svn','.bzr','_darcs','build.xml']
-
-" ack
-if executable('ag')
-  let g:ackprg = 'ag'
-endif
+" ProjectRoot
+let g:rootmarkers = ['invoke.yaml','.projectroot','.git','.hg','.svn','.bzr','_darcs','build.xml']
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Custom Functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! PicoProjectName(dir)
-    let directory = split(a:dir, "/")
-    let basename = directory[-1]
-    if basename == "include"
-        let basename = directory[-2]
-    elseif basename == "UnitTests"
-        let basename = directory[-2]
-    endif
-    return basename
-endfunction
-
-function! PicoBuild(type, path, blade, host)
-    let picoPath = a:path
-    let bladePath = picoPath."/".a:blade
-    let hostPath = picoPath."/".a:host
-
-    " First close the quickfix window to prevent a segfault?
-    exec "cclose"
-
-    let current_directory = getcwd()
-    if a:type == "1"
-        " build blade
-        exec "cd ".bladePath
-    elseif a:type == "2"
-        " build host
-        exec "cd ".hostPath
-    elseif a:type == "3"
-        " rootfs
-        exec "Dispatch sudo ".picoPath."/blade/fs/buildfs.sh"
-        return
-    elseif a:type == "4"
-        " buildall
-        exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdbip"
-        return
-    elseif a:type == "5"
-        " taggen
-        let tagScript = picoPath."/scripts/taggen.sh"
-        if !filereadable(tagScript)
-            return
-        endif
-        exec "silent !".tagScript
-        exec "silent cs reset"
-        return
-    elseif a:type == "6"
-        " "clean" build
-        exec "Dispatch cd ".picoPath."/scripts/; ./buildall.sh -kdb"
-        return
-    else
-        echom "Error: Bad build type"
-        return
-    endif
-
-    " Now Build
-    exec "Dispatch make ".PicoProjectName(current_directory)
-
-    " Return home
-    exec "cd ".current_directory
-endfunction
-
-function! SmartboxProjectDir(dir)
-    let directory = split(a:dir, "/")
-
-    let c = 0
-    let dir = directory[c]
-
-    while dir != "smartbox"
-        let c -= 1
-        let dir = directory[c]
-
-        if dir == "home"
-            return "error"
-        endif
-    endwhile
-
-    let finalDir = ""
-
-    while c != -1
-        let c += 1
-
-        if directory[c] == "src"
-            return finalDir
-        elseif directory[c] == "include"
-            return finalDir
-        endif
-
-        let finalDir = finalDir . directory[c] . "/"
-    endwhile
-
-    return finalDir
-
-endfunction
-
-function! SmartboxBuild(type)
-    let picoPath = "~/work/smartbox/"
-    let bladePath = picoPath."build/blade/"
-    let hostPath = picoPath."build/host/"
-
-    let currentDirectory = getcwd()
-
-    " First close the quickfix window to prevent a segfault
-    exec "cclose"
-
-    let buildDir = SmartboxProjectDir(currentDirectory)
-
-    if buildDir == "error"
-        echom "Error getting build dir"
-        return
-    endif
-
-    if a:type == "1"
-        let buildDir = bladePath.buildDir
-    elseif a:type == "2"
-        let buildDir = hostPath.buildDir
-    else
-        echom "Error: Bad build type"
-        return
-    endif
-
-    " Change directory
-    exec "cd ".buildDir
-
-    " Now build
-    exec "Dispatch make -j$(nproc)"
-
-    " Return home
-    exec "cd ".currentDirectory
-
-endfunction
-
-function! FindBuildType()
-    let directory = split(getcwd(), "/")
-
-    let c = -1
-    let dir = directory[c]
-
-    while dir != "home"
-        if file
-
-        let c -= 1
-        let dir = directory[c]
-    endwhile
-
-    return "none"
-
+function! Search(query)
+  exec "ProjectRootExe Grepper -tool rg -highlight -query ".a:query
+  exec "copen"
+  exec "normal \<C-W>p"
 endfunction
 
 function! Build(type)
 
-    " read project config
-    let config = findfile(".pico_project", ".;")
+    let buildTarget = $CONDA_DEFAULT_ENV
 
-    if empty(config)
-        echo "No .pico_project file found in path"
+    if buildTarget == ""
+        echom "Project not activated; building disabled"
         return
     endif
 
-    let configStrings = readfile(config)
-    let projectRoot = ""
-    let bladeDir = ""
-    let hostDir = ""
-    let buildFs = ""
-    let tagGen = ""
-    let buildProject = ""
+    echom "Build Target: ".buildTarget
 
-    for i in range(0, len(configStrings) - 1)
-        let string = split(configStrings[i], "=")
-        let key = string[0]
-        let value = string[1]
+    let projectPath = projectroot#get()
 
-        if key == "ROOT"
-            let projectRoot = value
-        elseif key == "BLADE"
-            let bladeDir = value
-        elseif key == "HOST"
-            let hostDir = value
-        elseif key == "BUILDFS"
-            let buildFs = value
-        elseif key == "TAGGEN"
-            let tagGen = value
-        elseif key == "BUILD"
-            let buildProject = value
-        endif
-    endfor
-
-    if buildProject == "clifford"
-        call PicoBuild(a:type, projectRoot, bladeDir, hostDir)
-    elseif buildProject == "smartbox"
-        call SmartboxBuild(a:type)
-    else
-        echom "Unknown build project"
+    if projectPath == ""
+        echom "Empty project path"
+        return
     endif
 
-endfunction
+    " First close the quickfix window to prevent a segfault
+    exec "cclose"
+    exec "lclose"
 
-function! RunTest()
-    let testName = expand('%:t:r')
+    exec "cd ".projectPath
 
-    let testPath = "~/work/smartbox/build/host/".SmartboxProjectDir(getcwd())
+    if a:type == "buildall"
+        exec "Dispatch make && inv flash"
+    elseif a:type == "make"
+        exec "Dispatch make"
+    elseif a:type == "flash"
+        exec "Dispatch inv flash"
+    elseif a:type == "quick"
+				exec "YcmDiags"
+    endif
 
-    execute "!".testPath.testName
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Autocommands
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 autocmd BufEnter * :syntax sync fromstart " ensure every file does syntax highlighting (full)
-au BufNewFile,BufRead *.tpp :set ft=cpp " damn tpps
 au BufNewFile,BufFilePre,BufRead *.md :set ft=markdown
 autocmd QuickFixCmdPost [^l]* nested cwindow
-autocmd BufWritePost *.cpp,*.h,*.c,*.hpp :call Build(5)
 
-let s:uname = system("echo -n \"$(uname)\"")
-if !v:shell_error && s:uname == "Linux"
-    let s:display = system("echo -n \"$DISPLAY\"")
-    if !empty(s:display) " Ensure we have a gnome session
-        au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
-          au InsertEnter,InsertChange *
-            \ if v:insertmode == 'i' |
-            \   silent execute '!echo -ne "\e[5 q"' | redraw! |
-            \ elseif v:insertmode == 'r' |
-            \   silent execute '!echo -ne "\e[3 q"' | redraw! |
-            \ endif
-          au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
-    endif
+" if exists('$TMUX')
+"     let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+"     let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+" else
+"     let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Vertical bar in insert mode
+"     let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
+" endif
+
+if exists('$TMUX')
+    let &t_SI = "\<Esc>[5 q"
+    let &t_EI = "\<Esc>[0 q"
 else
-    " Change cursor shape between insert and normal mode in iTerm2.app
-    if $TERM_PROGRAM =~ "iTerm"
-        if exists('$TMUX')
-            let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
-            let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
-        else
-            let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Vertical bar in insert mode
-            let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
-        endif
-    endif
+    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 endif
+
 " C/C++ specific settings
-autocmd FileType c,cpp,cc  setlocal cindent comments-=:// comments+=f:// cino=>s,e0,n0,f0,{0,}0,^-1s,:0,=s,h1s,p2,t0,+2,(2,)20,*30
+autocmd FileType c,cpp,cc  setlocal cindent tabstop=2 softtabstop=2 shiftwidth=2 comments-=:// comments+=f:// cino=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1
 autocmd FileType gitcommit setlocal comments=
+
+" set pwd to project root at startup
+autocmd VimEnter * :call ProjectRootCD()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " VIM Tabs (Windows)
