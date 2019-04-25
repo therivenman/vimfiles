@@ -11,9 +11,12 @@ Installation:
   git clone https://github.com/therivenman/vimfiles.git ~/.vim
   ln -s ~/.vim/vimrc ~/.vimrc
   ```
-2. Install Vundle:
+2. Install vim-plug:
 
-  `git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim`
+  ```
+  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  ```
 
 3. Install plugins:
 
